@@ -4,6 +4,7 @@ interface ResamplerOptions {
   nativeSampleRate: number
   targetSampleRate: number
   targetFrameSize: number
+  targetSpeed: number
 }
 
 export class Resampler {
@@ -26,7 +27,7 @@ export class Resampler {
     }
 
     while (
-      (this.inputBuffer.length * this.options.targetSampleRate) /
+      (this.inputBuffer.length * this.options.targetSampleRate * this.options.targetSpeed) /
         this.options.nativeSampleRate >
       this.options.targetFrameSize
     ) {
@@ -41,7 +42,7 @@ export class Resampler {
           Math.min(
             this.inputBuffer.length,
             ((outputIndex + 1) * this.options.nativeSampleRate) /
-              this.options.targetSampleRate
+              (this.options.targetSampleRate * this.options.targetSpeed)
           )
         ) {
           sum += this.inputBuffer[inputIndex] as number

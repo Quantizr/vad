@@ -68,6 +68,7 @@ export class PlatformAgnosticNonRealTimeVAD {
       nativeSampleRate: sampleRate,
       targetSampleRate: 16000,
       targetFrameSize: this.options.frameSamples,
+      targetSpeed: 1,
     }
     const resampler = new Resampler(resamplerOptions)
     const frames = resampler.process(inputAudio)

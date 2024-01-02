@@ -1,4 +1,5 @@
 import * as ort from "onnxruntime-web"
+import { PitchShift } from "soundbank-pitch-shift";
 import {
   log,
   Message,
@@ -170,6 +171,9 @@ export class AudioNodeVAD {
       processorOptions: {
         frameSamples: fullOptions.frameSamples,
       },
+      parameterData: {
+        audioSpeed: 1,
+      },
     })
 
     const model = await Silero.new(ort, () =>
@@ -190,11 +194,14 @@ export class AudioNodeVAD {
       }
     )
 
+    const pitchShift = PitchShift(ctx)
+
     const audioNodeVAD = new AudioNodeVAD(
       ctx,
       fullOptions,
       frameProcessor,
-      vadNode
+      vadNode,
+      pitchShift
     )
 
     vadNode.port.onmessage = async (ev: MessageEvent) => {
@@ -217,7 +224,8 @@ export class AudioNodeVAD {
     public ctx: AudioContext,
     public options: RealTimeVADOptions,
     private frameProcessor: FrameProcessor,
-    private entryNode: AudioWorkletNode
+    private entryNode: AudioWorkletNode,
+    private pitchShift: PitchShift
   ) {}
 
   pause = () => {
@@ -230,7 +238,16 @@ export class AudioNodeVAD {
   }
 
   receive = (node: AudioNode) => {
-    node.connect(this.entryNode)
+    node.connect(this.pitchShift)
+    this.pitchShift.connect(this.entryNode)
+    
+  }
+
+  updateAudioSpeed = (speed: number) => {
+    let cappedSpeed = Math.min(speed, 2)
+    this.entryNode.parameters.get('audioSpeed')?.setValueAtTime(cappedSpeed, this.ctx.currentTime);
+    this.pitchShift.transpose = 12 * Math.log2(cappedSpeed)
+    console.log("Changed audioSpeed real-time-vad.ts: ", this.entryNode.parameters.get('audioSpeed'))
   }
 
   processFrame = async (frame: Float32Array) => {

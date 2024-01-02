@@ -10,10 +10,16 @@ class Processor extends AudioWorkletProcessor {
   _initialized = false
   _stopProcessing = false
   options: WorkletOptions
+  targetRatio: number
+
+  static get parameterDescriptors() {
+    return [{name: 'audioSpeed', defaultValue: 1}];
+  }
 
   constructor(options) {
     super()
     this.options = options.processorOptions as WorkletOptions
+    this.targetRatio = 1
 
     this.port.onmessage = (ev) => {
       if (ev.data.message === Message.SpeechStop) {
@@ -29,9 +35,14 @@ class Processor extends AudioWorkletProcessor {
       nativeSampleRate: sampleRate,
       targetSampleRate: 16000,
       targetFrameSize: this.options.frameSamples,
+      targetSpeed: 1,
     })
     this._initialized = true
     log.debug("initialized worklet")
+  }
+  updateAudioSpeed = (speed: number) => {
+    //this.targetRatio = Math.min(speed, sampleRate/16000)
+    this.resampler.options.targetSampleRate = Math.floor(16000*speed)//this.targetRatio)
   }
   process(
     inputs: Float32Array[][],
@@ -41,7 +52,7 @@ class Processor extends AudioWorkletProcessor {
     if (this._stopProcessing) {
       return false
     }
-
+    this.updateAudioSpeed(parameters["audioSpeed"][0])
     // @ts-ignore
     const arr = inputs[0][0]
 
