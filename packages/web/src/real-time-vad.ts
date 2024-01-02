@@ -1,5 +1,4 @@
 import * as ort from "onnxruntime-web"
-import { PitchShift } from "soundbank-pitch-shift";
 import {
   log,
   Message,
@@ -194,7 +193,8 @@ export class AudioNodeVAD {
       }
     )
 
-    const pitchShift = PitchShift(ctx)
+    var PitchShift = require('soundbank-pitch-shift')
+    let pitchShift = PitchShift(ctx)
 
     const audioNodeVAD = new AudioNodeVAD(
       ctx,

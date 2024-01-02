@@ -25,7 +25,6 @@ var __importStar = (this && this.__importStar) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AudioNodeVAD = exports.MicVAD = exports.defaultRealTimeVADOptions = void 0;
 const ort = __importStar(require("onnxruntime-web"));
-const soundbank_pitch_shift_1 = require("soundbank-pitch-shift");
 const _common_1 = require("./_common");
 const asset_path_1 = require("./asset-path");
 const default_model_fetcher_1 = require("./default-model-fetcher");
@@ -129,7 +128,8 @@ class AudioNodeVAD {
             minSpeechFrames: fullOptions.minSpeechFrames,
             submitUserSpeechOnPause: fullOptions.submitUserSpeechOnPause,
         });
-        const pitchShift = (0, soundbank_pitch_shift_1.PitchShift)(ctx);
+        var PitchShift = require('soundbank-pitch-shift');
+        let pitchShift = PitchShift(ctx);
         const audioNodeVAD = new AudioNodeVAD(ctx, fullOptions, frameProcessor, vadNode, pitchShift);
         vadNode.port.onmessage = async (ev) => {
             switch (ev.data?.message) {
